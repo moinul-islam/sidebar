@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ecommerce Navbar with Sidebar</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .sidebar {
+            width: 280px;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding-top: 60px;
+            z-index: 999;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+        }
+        
+        .content {
+            margin-left: 280px;
+            padding-top: 60px;
+            transition: margin-left 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            .content {
+                margin-left: 0;
+            }
+        }
+        
+        .navbar {
+            position: fixed;
+            width: 100%;
+            z-index: 1000;
+        }
+        
+        .submenu {
+            padding-left: 0;
+            display: none;
+            border-left: 2px solid #e9ecef;
+            margin-left: 20px;
+        }
+        
+        .submenu.show {
+            display: block;
+        }
+        
+        .sidebar-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            color: #333;
+            text-decoration: none;
+        }
+        
+        .sidebar-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .sidebar-item i {
+            width: 25px;
+            margin-right: 10px;
+            text-align: center;
+        }
+        
+        .arrow {
+            margin-left: auto;
+            transition: transform 0.3s;
+        }
+        
+        .rotate {
+            transform: rotate(90deg);
+        }
+        
+        /* Dark mode styles */
+        .dark-mode {
+            background-color: #2d2d2d;
+            color: #f8f9fa;
+        }
+        
+        .dark-mode .sidebar {
+            background-color: #333;
+            color: #f8f9fa;
+        }
+        
+        .dark-mode .sidebar-item {
+            color: #f8f9fa;
+        }
+        
+        .dark-mode .sidebar-item:hover {
+            background-color: #444;
+        }
+        
+        .dark-mode .navbar {
+            background-color: #333 !important;
+        }
+        
+        .dark-mode .dropdown-menu {
+            background-color: #333;
+            color: #f8f9fa;
+        }
+        
+        .dark-mode .dropdown-item {
+            color: #f8f9fa;
+        }
+        
+        .dark-mode .dropdown-item:hover {
+            background-color: #444;
+        }
+        
+        .dark-mode .submenu {
+            border-left: 2px solid #444;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <!-- Sidebar toggle button -->
+            <button id="sidebarToggle" class="btn">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <!-- Brand -->
+            <div class="mx-auto">
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="locationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        Select Location
+                    </button>
+                    <div class="dropdown-menu p-3" style="width: 300px;">
+                        <!-- Country dropdown -->
+                        <div class="mb-3">
+                            <label for="countrySelect" class="form-label">Country</label>
+                            <select class="form-select" id="countrySelect">
+                                <option selected>Select Country</option>
+                                <option value="1">Bangladesh</option>
+                                <option value="2">India</option>
+                                <option value="3">Pakistan</option>
+                            </select>
+                        </div>
+                        
+                        <!-- City dropdown (initially disabled) -->
+                        <div class="mb-3">
+                            <label for="citySelect" class="form-label">City</label>
+                            <select class="form-select" id="citySelect" disabled>
+                                <option selected>Select City</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Area dropdown (initially disabled) -->
+                        <div class="mb-3">
+                            <label for="areaSelect" class="form-label">Area</label>
+                            <select class="form-select" id="areaSelect" disabled>
+                                <option selected>Select Area</option>
+                            </select>
+                        </div>
+                        
+                        <button class="btn btn-primary w-100">Confirm Location</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- User dropdown -->
+            <div class="dropdown">
+                <button class="btn" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-user"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                    <li><a class="dropdown-item" href="#"><i class="fas fa-user-circle me-2"></i> Profile</a></li>
+                    <li><a class="dropdown-item" href="#" id="darkModeToggle"><i class="fas fa-moon me-2"></i> Dark Mode</a></li>
+                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#settingsModal"><i class="fas fa-cog me-2"></i> Settings</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <!-- Food category -->
+        <div>
+            <div class="sidebar-item" data-bs-toggle="collapse" data-bs-target="#foodSubmenu" aria-expanded="false">
+                <i class="fas fa-apple-alt text-danger"></i>
+                <span>Food</span>
+                <i class="fas fa-chevron-right arrow"></i>
+            </div>
+            <div class="collapse submenu" id="foodSubmenu">
+                <!-- Fruits & Vegetables -->
+                <div class="sidebar-item" data-bs-toggle="collapse" data-bs-target="#fruitsVeggiesSubmenu" aria-expanded="false">
+                    <span>Fruits & Vegetables</span>
+                    <i class="fas fa-chevron-right arrow"></i>
+                </div>
+                <div class="collapse submenu" id="fruitsVeggiesSubmenu">
+                    <a href="#" class="sidebar-item">Fresh Vegetables</a>
+                    <a href="#" class="sidebar-item">Fresh Fruits</a>
+                </div>
+                
+                <!-- Meat & Fish -->
+                <div class="sidebar-item" data-bs-toggle="collapse" data-bs-target="#meatFishSubmenu" aria-expanded="false">
+                    <span>Meat & Fish</span>
+                    <i class="fas fa-chevron-right arrow"></i>
+                </div>
+                <div class="collapse submenu" id="meatFishSubmenu">
+                    <a href="#" class="sidebar-item">Chicken</a>
+                    <a href="#" class="sidebar-item">Beef</a>
+                    <a href="#" class="sidebar-item">Fish</a>
+                </div>
+                
+                <!-- Cooking -->
+                <div class="sidebar-item" data-bs-toggle="collapse" data-bs-target="#cookingSubmenu" aria-expanded="false">
+                    <span>Cooking</span>
+                    <i class="fas fa-chevron-right arrow"></i>
+                </div>
+                <div class="collapse submenu" id="cookingSubmenu">
+                    <a href="#" class="sidebar-item">Rice</a>
+                    <a href="#" class="sidebar-item">Oil</a>
+                    <a href="#" class="sidebar-item">Spices</a>
+                </div>
+                
+                <!-- Sauces & Pickles -->
+                <a href="#" class="sidebar-item">Sauces & Pickles</a>
+                
+                <!-- Dairy & Eggs -->
+                <div class="sidebar-item" data-bs-toggle="collapse" data-bs-target="#dairySubmenu" aria-expanded="false">
+                    <span>Dairy & Eggs</span>
+                    <i class="fas fa-chevron-right arrow"></i>
+                </div>
+                <div class="collapse submenu" id="dairySubmenu">
+                    <a href="#" class="sidebar-item">Milk</a>
+                    <a href="#" class="sidebar-item">Eggs</a>
+                    <a href="#" class="sidebar-item">Cheese</a>
+                </div>
+                
+                <!-- Breakfast -->
+                <a href="#" class="sidebar-item">Breakfast</a>
+                
+                <!-- Candy & Chocolate -->
+                <a href="#" class="sidebar-item">Candy & Chocolate</a>
+                
+                <!-- Snacks -->
+                <a href="#" class="sidebar-item">Snacks</a>
+                
+                <!-- Beverages -->
+                <a href="#" class="sidebar-item">Beverages</a>
+                
+                <!-- Baking -->
+                <a href="#" class="sidebar-item">Baking</a>
+                
+                <!-- Frozen & Canned -->
+                <a href="#" class="sidebar-item">Frozen & Canned</a>
+                
+                <!-- Diabetic Food -->
+                <a href="#" class="sidebar-item">Diabetic Food</a>
+            </div>
+        </div>
+        
+        <!-- Cleaning Supplies -->
+        <div>
+            <div class="sidebar-item" data-bs-toggle="collapse" data-bs-target="#cleaningSubmenu" aria-expanded="false">
+                <i class="fas fa-spray-can text-primary"></i>
+                <span>Cleaning Supplies</span>
+                <i class="fas fa-chevron-right arrow"></i>
+            </div>
+            <div class="collapse submenu" id="cleaningSubmenu">
+                <a href="#" class="sidebar-item">Laundry</a>
+                <a href="#" class="sidebar-item">Dishwashing</a>
+                <a href="#" class="sidebar-item">Cleaning Tools</a>
+                <a href="#" class="sidebar-item">Air Fresheners</a>
+            </div>
+        </div>
+        
+        <!-- Personal Care -->
+        <div>
+            <div class="sidebar-item" data-bs-toggle="collapse" data-bs-target="#personalCareSubmenu" aria-expanded="false">
+                <i class="fas fa-shower text-warning"></i>
+                <span>Personal Care</span>
+                <i class="fas fa-chevron-right arrow"></i>
+            </div>
+            <div class="collapse submenu" id="personalCareSubmenu">
+                <a href="#" class="sidebar-item">Hair Care</a>
+                <a href="#" class="sidebar-item">Skin Care</a>
+                <a href="#" class="sidebar-item">Oral Care</a>
+                <a href="#" class="sidebar-item">Feminine Hygiene</a>
+            </div>
+        </div>
+        
+        <!-- Health & Wellness -->
+        <div>
+            <div class="sidebar-item" data-bs-toggle="collapse" data-bs-target="#healthSubmenu" aria-expanded="false">
+                <i class="fas fa-heartbeat text-success"></i>
+                <span>Health & Wellness</span>
+                <i class="fas fa-chevron-right arrow"></i>
+            </div>
+            <div class="collapse submenu" id="healthSubmenu">
+                <a href="#" class="sidebar-item">Vitamins & Supplements</a>
+                <a href="#" class="sidebar-item">First Aid</a>
+                <a href="#" class="sidebar-item">Medical Supplies</a>
+                <a href="#" class="sidebar-item">Adult Care</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="content" id="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <h1 class="mb-4">Welcome to Our Store</h1>
+                    <div class="row">
+                        <div class="col-md-4 mb-4">
+                            <div class="card">
+                                <img src="/api/placeholder/400/300" class="card-img-top" alt="Product Image">
+                                <div class="card-body">
+                                    <h5 class="card-title">Fresh Vegetables</h5>
+                                    <p class="card-text">Explore our wide range of fresh vegetables sourced directly from farmers.</p>
+                                    <a href="#" class="btn btn-primary">Shop Now</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="card">
+                                <img src="/api/placeholder/400/300" class="card-img-top" alt="Product Image">
+                                <div class="card-body">
+                                    <h5 class="card-title">Dairy Products</h5>
+                                    <p class="card-text">Discover our selection of fresh dairy products from trusted sources.</p>
+                                    <a href="#" class="btn btn-primary">Shop Now</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="card">
+                                <img src="/api/placeholder/400/300" class="card-img-top" alt="Product Image">
+                                <div class="card-body">
+                                    <h5 class="card-title">Cleaning Supplies</h5>
+                                    <p class="card-text">Keep your home clean with our range of cleaning products.</p>
+                                    <a href="#" class="btn btn-primary">Shop Now</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Settings Modal -->
+    <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="settingsModalLabel">Settings</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="nav nav-tabs" id="settingsTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="true">Edit Profile</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="password-tab" data-bs-toggle="tab" data-bs-target="#password" type="button" role="tab" aria-controls="password" aria-selected="false">Change Password</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="phone-tab" data-bs-toggle="tab" data-bs-target="#phone" type="button" role="tab" aria-controls="phone" aria-selected="false">Change Number</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="delete-tab" data-bs-toggle="tab" data-bs-target="#delete" type="button" role="tab" aria-controls="delete" aria-selected="false">Delete Profile</button>
+                        </li>
+                    </ul>
+                    <div class="tab-content p-3" id="settingsTabContent">
+                        <div class="tab-pane fade show active" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                            <form>
+                                <div class="mb-3">
+                                    <label for="fullName" class="form-label">Full Name</label>
+                                    <input type="text" class="form-control" id="fullName">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="email">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="address" class="form-label">Address</label>
+                                    <textarea class="form-control" id="address" rows="3"></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                            </form>
+                        </div>
+                        <div class="tab-pane fade" id="password" role="tabpanel" aria-labelledby="password-tab">
+                            <form>
+                                <div class="mb-3">
+                                    <label for="currentPassword" class="form-label">Current Password</label>
+                                    <input type="password" class="form-control" id="currentPassword">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="newPassword" class="form-label">New Password</label>
+                                    <input type="password" class="form-control" id="newPassword">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                                    <input type="password" class="form-control" id="confirmPassword">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Change Password</button>
+                            </form>
+                        </div>
+                        <div class="tab-pane fade" id="phone" role="tabpanel" aria-labelledby="phone-tab">
+                            <form>
+                                <div class="mb-3">
+                                    <label for="currentPhone" class="form-label">Current Phone Number</label>
+                                    <input type="tel" class="form-control" id="currentPhone" disabled>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="newPhone" class="form-label">New Phone Number</label>
+                                    <input type="tel" class="form-control" id="newPhone">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Update Phone Number</button>
+                            </form>
+                        </div>
+                        <div class="tab-pane fade" id="delete" role="tabpanel" aria-labelledby="delete-tab">
+                            <div class="alert alert-danger">
+                                <h5>Warning!</h5>
+                                <p>Deleting your profile will permanently remove all your data from our system. This action cannot be undone.</p>
+                            </div>
+                            <form>
+                                <div class="mb-3">
+                                    <label for="deleteConfirm" class="form-label">Type "DELETE" to confirm</label>
+                                    <input type="text" class="form-control" id="deleteConfirm">
+                                </div>
+                                <button type="submit" class="btn btn-danger">Delete My Profile</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Sidebar toggle
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('show');
+        });
+        
+        // Dropdown data
+        const countries = {
+            "1": ["Dhaka", "Chittagong", "Sylhet", "Rajshahi", "Khulna"],
+            "2": ["Delhi", "Mumbai", "Kolkata", "Chennai", "Bangalore"],
+            "3": ["Karachi", "Lahore", "Islamabad", "Peshawar", "Quetta"]
+        };
+        
+        const cities = {
+            "Dhaka": ["Mirpur", "Gulshan", "Dhanmondi", "Uttara", "Banani"],
+            "Chittagong": ["Agrabad", "Nasirabad", "Halishahar", "Patenga", "Khulshi"],
+            "Mumbai": ["Andheri", "Bandra", "Juhu", "Worli", "Dadar"],
+            "Delhi": ["Connaught Place", "Karol Bagh", "Chandni Chowk", "Hauz Khas", "Dwarka"],
+            "Lahore": ["Gulberg", "DHA", "Johar Town", "Model Town", "Iqbal Town"]
+        };
+        
+        // Country change event
+        document.getElementById('countrySelect').addEventListener('change', function() {
+            const countryId = this.value;
+            const citySelect = document.getElementById('citySelect');
+            
+            // Clear previous options
+            citySelect.innerHTML = '<option selected>Select City</option>';
+            document.getElementById('areaSelect').innerHTML = '<option selected>Select Area</option>';
+            document.getElementById('areaSelect').disabled = true;
+            
+            if (countryId !== 'Select Country') {
+                // Add new options
+                countries[countryId].forEach(city => {
+                    const option = document.createElement('option');
+                    option.value = city;
+                    option.textContent = city;
+                    citySelect.appendChild(option);
+                });
+                
+                // Enable city select
+                citySelect.disabled = false;
+            } else {
+                citySelect.disabled = true;
+            }
+        });
+        
+        // City change event
+        document.getElementById('citySelect').addEventListener('change', function() {
+            const cityName = this.value;
+            const areaSelect = document.getElementById('areaSelect');
+            
+            // Clear previous options
+            areaSelect.innerHTML = '<option selected>Select Area</option>';
+            
+            if (cityName !== 'Select City' && cities[cityName]) {
+                // Add new options
+                cities[cityName].forEach(area => {
+                    const option = document.createElement('option');
+                    option.value = area;
+                    option.textContent = area;
+                    areaSelect.appendChild(option);
+                });
+                
+                // Enable area select
+                areaSelect.disabled = false;
+            } else {
+                areaSelect.disabled = true;
+            }
+        });
+        
+        // Dark mode toggle
+        document.getElementById('darkModeToggle').addEventListener('click', function() {
+            document.body.classList.toggle('dark-mode');
+            
+            // Update text based on current mode
+            const darkModeIcon = this.querySelector('i');
+            if (document.body.classList.contains('dark-mode')) {
+                darkModeIcon.classList.remove('fa-moon');
+                darkModeIcon.classList.add('fa-sun');
+                this.textContent = ' Light Mode';
+                this.prepend(darkModeIcon);
+            } else {
+                darkModeIcon.classList.remove('fa-sun');
+                darkModeIcon.classList.add('fa-moon');
+                this.textContent = ' Dark Mode';
+                this.prepend(darkModeIcon);
+            }
+        });
+        
+        // Rotate arrow when collapse is toggled
+        document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(element => {
+            element.addEventListener('click', function() {
+                const arrow = this.querySelector('.arrow');
+                if (arrow) {
+                    arrow.classList.toggle('rotate');
+                }
+            });
+        });
+        
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    </script>
+</body>
+</html>
